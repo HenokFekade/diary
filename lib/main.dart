@@ -3,11 +3,12 @@ import 'package:diary/utility/utility.dart';
 import 'package:flutter/material.dart';
 
 import 'model/month.dart';
+import 'model/diary.dart';
 import 'model/month_year.dart';
 
-void main() => runApp(Diary());
+void main() => runApp(DiaryApp());
 
-class Diary extends StatelessWidget {
+class DiaryApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -63,13 +64,32 @@ class _MyAppState extends State<_MyApp> {
   List<Widget> _monthWidgets(Year year) {
     List<Widget> widgets = [];
     for (Month month in year.months) {
-      widgets.add(ExpansionTile(
-        title: Text(
-          '${month.month}',
+      widgets.add(
+        Container(
+          child: ExpansionTile(
+            title: Text(
+              '${month.month}',
+            ),
+            children: this._diaryWidgets(month),
+          ),
         ),
-      ));
+      );
     }
     return widgets;
+  }
+
+  List<Widget> _diaryWidgets(Month month) {
+    List<Widget> widgets = [];
+    for (Diary diary in month.diaries) {
+      widgets.add(
+        Container(
+          child: Text(
+            '${diary.diary}',
+          ),
+        ),
+      );
+    }
+    return widgets.toList();
   }
 
   Future<void> _fetchData() async {
@@ -80,7 +100,7 @@ class _MyAppState extends State<_MyApp> {
     });
   }
 
-  Future<Map<int, Year>> getYearMap() async {
+  Future<Map<int, Year>> _getYearMap() async {
     Map<int, Year> yearMap = {};
     List<Year> years = await Year().getAll();
     years.forEach((year) {
@@ -89,7 +109,7 @@ class _MyAppState extends State<_MyApp> {
     return yearMap;
   }
 
-  Future<Map<int, Month>> getMonthMap() async {
+  Future<Map<int, Month>> _getMonthMap() async {
     Map<int, Month> monthMap = {};
     List<Month> months = await Month().getAll();
     months.forEach((month) {
@@ -98,7 +118,7 @@ class _MyAppState extends State<_MyApp> {
     return monthMap;
   }
 
-  Future<Map<int, MonthYear>> getMonthYearMap() async {
+  Future<Map<int, MonthYear>> _getMonthYearMap() async {
     Map<int, MonthYear> monthYearMap = {};
     List<MonthYear> monthYears = await MonthYear().getAll();
     monthYears.forEach((monthYear) {
@@ -107,11 +127,16 @@ class _MyAppState extends State<_MyApp> {
     return monthYearMap;
   }
 
+  Future<List<Diary>> _getDiaries() async {
+    return await Diary().getAll();
+  }
+
   //add months in to each year, diaries to the month they belong
   Future<List<Year>> organizer() async {
-    Map<int, Year> yearMap = await this.getYearMap();
-    Map<int, Month> monthMap = await this.getMonthMap();
-    Map<int, MonthYear> monthYearMap = await this.getMonthYearMap();
+    Map<int, Year> yearMap = await this._getYearMap();
+    Map<int, Month> monthMap = await this._getMonthMap();
+    Map<int, MonthYear> monthYearMap = await this._getMonthYearMap();
+    List<Diary> diaries = await this._getDiaries();
     monthYearMap.forEach((monthYearId, monthYear) {
       Month month = monthMap[monthYear.monthId];
       Year year = yearMap[monthYear.yearId];
@@ -119,6 +144,19 @@ class _MyAppState extends State<_MyApp> {
         yearMap[monthYear.yearId].months.add(month);
       }
     });
+    for (Diary diary in diaries) {
+      monthYearMap[diary.monthYearId].diaries.add(diary);
+    }
+    for (MonthYear monthYear in monthYearMap.values) {
+      Year year = yearMap[monthYear.yearId];
+      Month month = monthMap[monthYear.monthId];
+      month.diaries.clear();
+      month.diaries.addAll(monthYear.diaries);
+      if (!year.months.contains(month)) {
+        yearMap[monthYear.yearId].months.add(month);
+      }
+    }
+
     return yearMap.values.toList();
   }
 }

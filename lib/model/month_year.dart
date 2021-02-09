@@ -1,10 +1,12 @@
 import 'package:diary/database/db_connector.dart';
 import 'package:sqflite/sqflite.dart';
+import 'diary.dart';
 
 class MonthYear {
   int _id;
   int _monthId;
   int _yearId;
+  List<Diary> diaries = [];
   MonthYear({
     int id,
     int monthId,
