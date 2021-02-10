@@ -1,3 +1,4 @@
+import 'package:diary/editing_page.dart';
 import 'package:diary/model/year.dart';
 import 'package:diary/utility/utility.dart';
 import 'package:flutter/material.dart';
@@ -49,15 +50,38 @@ class _MyAppState extends State<_MyApp> {
           itemBuilder: (context, index) => this._yearWidget(years[index]),
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EditingPage(),
+              ));
+        },
+        child: Icon(
+          Icons.add,
+        ),
+      ),
     );
   }
 
   Widget _yearWidget(Year year) {
-    return ExpansionTile(
-      title: Text(
-        '${year.year}',
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15.0),
       ),
-      children: this._monthWidgets(year),
+      elevation: 5.0,
+      child: ExpansionTile(
+        title: Text(
+          '${year.year}',
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 25.0,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        children: this._monthWidgets(year),
+      ),
     );
   }
 
@@ -65,12 +89,24 @@ class _MyAppState extends State<_MyApp> {
     List<Widget> widgets = [];
     for (Month month in year.months) {
       widgets.add(
-        Container(
-          child: ExpansionTile(
-            title: Text(
-              '${month.month}',
+        Padding(
+          padding: const EdgeInsets.only(left: 10.0, right: 5.0),
+          child: Card(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.zero,
             ),
-            children: this._diaryWidgets(month),
+            margin: EdgeInsets.all(0.0),
+            child: ExpansionTile(
+              title: Text(
+                '${month.month}',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  fontSize: 18.0,
+                  color: Colors.black,
+                ),
+              ),
+              children: this._diaryWidgets(month),
+            ),
           ),
         ),
       );
@@ -82,9 +118,94 @@ class _MyAppState extends State<_MyApp> {
     List<Widget> widgets = [];
     for (Diary diary in month.diaries) {
       widgets.add(
-        Container(
-          child: Text(
-            '${diary.diary}',
+        Padding(
+          padding: EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
+          child: Container(
+            decoration: BoxDecoration(boxShadow: [
+              BoxShadow(
+                color: Colors.black26,
+                offset: Offset(0.0, 0.0),
+                spreadRadius: 0.0,
+                blurRadius: 3.0,
+              )
+            ]),
+            width: double.infinity,
+            child: Card(
+              margin: EdgeInsets.all(0.0),
+              elevation: 0.0,
+              child: Padding(
+                padding: const EdgeInsets.only(
+                    left: 8.0, right: 4.0, bottom: 4.0, top: 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      child: Container(
+                        width: double.infinity,
+                        height: 20.0,
+                        child: Text(
+                          '${diary.diary}',
+                          style: TextStyle(
+                            fontSize: 15.0,
+                            color: Colors.black54,
+                            fontWeight: FontWeight.w400,
+                          ),
+                          textAlign: TextAlign.center,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditingPage(
+                            diary: diary,
+                          ),
+                        ),
+                      ).then((value) => _fetchData()),
+                    ),
+                    Container(
+                      padding: EdgeInsets.all(0.0),
+                      width: double.infinity,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            flex: 1,
+                            child: FlatButton(
+                              padding: EdgeInsets.all(0.0),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20.0),
+                              ),
+                              textColor: Colors.deepPurple,
+                              child: Text(
+                                'see more...',
+                              ),
+                              onPressed: () {},
+                            ),
+                          ),
+                          Expanded(
+                            flex: 1,
+                            child: Padding(
+                              padding: const EdgeInsets.only(right: 4.0),
+                              child: Text(
+                                '${Utility.dateFormatter(diary.timestamp)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black,
+                                  fontSize: 15.0,
+                                ),
+                                textAlign: TextAlign.right,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ),
       );

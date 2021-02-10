@@ -26,8 +26,21 @@ class Diary {
 
   String get timestamp => this._timestamp;
 
+  set diary(String value) {
+    _diary = value;
+  }
+
   Future<Database> _getDBInstance() async {
     return await DBConnector().instance();
+  }
+
+  Map<String, dynamic> _toJson() {
+    Map<String, dynamic> map = {
+      'month_year_id': this._monthYearId,
+      'day': this._day,
+      'diary': this._diary
+    };
+    return map;
   }
 
   Diary _fromJson(Map<String, dynamic> map) {
@@ -43,12 +56,44 @@ class Diary {
   Future<List<Diary>> getAll() async {
     Database database = await this._getDBInstance();
     List<Map<String, dynamic>> data = await database.query('diaries');
-    List<Diary> diarys = [];
+    List<Diary> diaries = [];
     for (Map map in data) {
       Diary diary = this._fromJson(map);
-      diarys.add(diary);
+      diaries.add(diary);
     }
     await database.close();
-    return diarys;
+    return diaries;
+  }
+
+  Future<List<Diary>> get(String where, List whereArg) async {
+    Database database = await this._getDBInstance();
+    List<Map<String, dynamic>> data = await database.rawQuery(
+        'SELECT id, month_year_id, day, diary, timestamp FROM diaries WHERE $where',
+        whereArg);
+    List<Diary> diaries = [];
+    for (Map value in data) {
+      Diary diary = Diary()._fromJson(value);
+      diaries.add(diary);
+    }
+    await database.close();
+    return diaries;
+  }
+
+  Future<int> create() async {
+    Database database = await this._getDBInstance();
+    int id = await database.insert('diaries', this._toJson());
+    await database.close();
+    return id;
+  }
+
+  Future<int> update() async {
+    Database database = await this._getDBInstance();
+    print(this._diary);
+    Map<String, dynamic> map = {'diary': this._diary};
+    int id = await database
+        .update('diaries', map, where: 'id = ?', whereArgs: [this._id]);
+    print(this._diary);
+    await database.close();
+    return id;
   }
 }

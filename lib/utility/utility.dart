@@ -1,4 +1,5 @@
 import 'package:diary/database/db_connector.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqlite_api.dart';
 
 class Utility {
@@ -10,5 +11,11 @@ class Utility {
     await database.execute('DROP TABLE IF EXISTS years');
     print('all table droped successfuly');
     await database.close();
+  }
+
+  static String dateFormatter(String dateTime) {
+    DateTime _dateTime = DateTime.parse(dateTime);
+    DateFormat dateFormat = DateFormat('EEE,  dd  MMM  yyyy');
+    return dateFormat.format(_dateTime);
   }
 }

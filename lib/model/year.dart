@@ -20,6 +20,12 @@ class Year {
     return await DBConnector().instance();
   }
 
+  Map<String, dynamic> _toJson() {
+    return {
+      'year': this._year,
+    };
+  }
+
   Year _fromJson(Map<String, dynamic> map) {
     return Year(
       id: map['id'],
@@ -37,5 +43,26 @@ class Year {
     }
     await database.close();
     return years;
+  }
+
+  Future<List<Year>> get(String where, List<dynamic> whereArg) async {
+    Database database = await this._getDBInstance();
+    List<Map<String, dynamic>> data = await database.query(
+      'years',
+      where: where,
+      whereArgs: whereArg,
+    );
+    List<Year> years = [];
+    for (Map map in data) {
+      Year year = this._fromJson(map);
+      years.add(year);
+    }
+    await database.close();
+    return years;
+  }
+
+  Future<int> create() async {
+    Database database = await this._getDBInstance();
+    return await database.insert('years', this._toJson());
   }
 }
