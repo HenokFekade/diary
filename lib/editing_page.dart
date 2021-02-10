@@ -184,7 +184,6 @@ class _MyAppState extends State<_MyApp> {
         String text = this._textEditingController.text;
         this._diary.diary = text;
         await this._updateDiary(context);
-        print('update method finished');
       } else {
         Fluttertoast.cancel();
         Fluttertoast.showToast(
@@ -219,7 +218,6 @@ class _MyAppState extends State<_MyApp> {
   }
 
   Future<void> _updateDiary(BuildContext context) async {
-    print('update method start');
     showDialog(
       context: context,
       barrierDismissible: false,
@@ -259,7 +257,6 @@ class _MyAppState extends State<_MyApp> {
         ],
       ),
     );
-    print('update method finished inside the method print');
   }
 
   Future<int> _getMonthId(String monthName) async {
