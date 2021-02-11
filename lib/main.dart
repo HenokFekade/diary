@@ -47,7 +47,8 @@ class _MyAppState extends State<_MyApp> {
       body: SafeArea(
         child: ListView.builder(
           itemCount: length,
-          itemBuilder: (context, index) => this._yearWidget(years[index]),
+          itemBuilder: (context, index) =>
+              this._yearWidget(years[index], context),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -65,7 +66,7 @@ class _MyAppState extends State<_MyApp> {
     );
   }
 
-  Widget _yearWidget(Year year) {
+  Widget _yearWidget(Year year, BuildContext context) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(15.0),
@@ -75,17 +76,18 @@ class _MyAppState extends State<_MyApp> {
         title: Text(
           '${year.year}',
           style: TextStyle(
+            fontFamily: 'Cookie',
             color: Colors.black,
             fontSize: 25.0,
             fontWeight: FontWeight.w600,
           ),
         ),
-        children: this._monthWidgets(year),
+        children: this._monthWidgets(year, context),
       ),
     );
   }
 
-  List<Widget> _monthWidgets(Year year) {
+  List<Widget> _monthWidgets(Year year, BuildContext context) {
     List<Widget> widgets = [];
     for (Month month in year.months) {
       widgets.add(
@@ -105,7 +107,7 @@ class _MyAppState extends State<_MyApp> {
                   color: Colors.black,
                 ),
               ),
-              children: this._diaryWidgets(month),
+              children: this._diaryWidgets(month, context),
             ),
           ),
         ),
@@ -114,9 +116,10 @@ class _MyAppState extends State<_MyApp> {
     return widgets;
   }
 
-  List<Widget> _diaryWidgets(Month month) {
+  List<Widget> _diaryWidgets(Month month, BuildContext context) {
     List<Widget> widgets = [];
     for (Diary diary in month.diaries) {
+      String randomString = Utility.randomString(20);
       widgets.add(
         Padding(
           padding: EdgeInsets.only(left: 10.0, right: 10.0, bottom: 10.0),
@@ -141,25 +144,29 @@ class _MyAppState extends State<_MyApp> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     GestureDetector(
-                      child: Container(
-                        width: double.infinity,
-                        height: 20.0,
-                        child: Text(
-                          '${diary.diary}',
-                          style: TextStyle(
-                            fontSize: 15.0,
-                            color: Colors.black54,
-                            fontWeight: FontWeight.w400,
+                      child: Hero(
+                        tag: randomString,
+                        child: Container(
+                          width: double.infinity,
+                          height: 20.0,
+                          child: Text(
+                            '${diary.diary}',
+                            style: TextStyle(
+                              fontSize: 15.0,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w400,
+                            ),
+                            textAlign: TextAlign.center,
+                            overflow: TextOverflow.ellipsis,
                           ),
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ),
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => EditingPage(
+                          builder: (_) => EditingPage(
                             diary: diary,
+                            randomString: randomString,
                           ),
                         ),
                       ).then((value) => _fetchData()),
@@ -181,7 +188,7 @@ class _MyAppState extends State<_MyApp> {
                               child: Text(
                                 'see more...',
                               ),
-                              onPressed: () {},
+                              onPressed: () => this._onSeeMore(diary, context),
                             ),
                           ),
                           Expanded(
@@ -192,7 +199,7 @@ class _MyAppState extends State<_MyApp> {
                                 '${Utility.dateFormatter(diary.timestamp)}',
                                 style: TextStyle(
                                   fontWeight: FontWeight.w400,
-                                  color: Colors.black,
+                                  color: Colors.black54,
                                   fontSize: 15.0,
                                 ),
                                 textAlign: TextAlign.right,
@@ -211,6 +218,91 @@ class _MyAppState extends State<_MyApp> {
       );
     }
     return widgets.toList();
+  }
+
+  void _onSeeMore(Diary diary, BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => SimpleDialog(
+        title: Text(
+          '${Utility.dateFormatter(diary.timestamp)}',
+        ),
+        children: [
+          Divider(),
+          Container(
+            height: MediaQuery.of(context).size.height / 3,
+            width: MediaQuery.of(context).size.width,
+            child: SingleChildScrollView(
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10.0),
+                child: Text(
+                  '${diary.diary}',
+                  style: TextStyle(
+                    fontSize: 15.0,
+                    color: Colors.black,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+          Divider(),
+          SizedBox(
+            height: 5.0,
+          ),
+          Container(
+            padding: EdgeInsets.all(0.0),
+            width: double.infinity,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Expanded(
+                  flex: 1,
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    textColor: Colors.deepPurple,
+                    onPressed: () {
+                      Navigator.pop(context);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditingPage(
+                            diary: diary,
+                          ),
+                        ),
+                      ).then((value) => _fetchData());
+                    },
+                    child: Text(
+                      'yes',
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: FlatButton(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20.0),
+                    ),
+                    textColor: Colors.deepPurple,
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    child: Text(
+                      'no',
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _fetchData() async {

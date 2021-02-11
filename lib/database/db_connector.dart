@@ -25,7 +25,7 @@ class DBConnector {
         db.execute(
             'CREATE TABLE IF NOT EXISTS month_years (id INTEGER NOT NULL UNIQUE, month_id INTEGER NOT NULL, year_id INTEGER NOT NULL, PRIMARY KEY (year_id, month_id), FOREIGN KEY (year_id) REFERENCES years (id) ON DELETE CASCADE, FOREIGN KEY (month_id) REFERENCES months (id) ON DELETE CASCADE)');
         db.execute(
-            'CREATE TABLE IF NOT EXISTS diaries (id INTEGER PRIMARY KEY AUTOINCREMENT, month_year_id INTEGER NOT NULL, day INTEGER NOT NULL, diary TEXT NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (month_year_id) REFERENCES month_years (id) ON DELETE CASCADE)');
+            'CREATE TABLE IF NOT EXISTS diaries (id INTEGER PRIMARY KEY AUTOINCREMENT, month_year_id INTEGER NOT NULL, day INTEGER NOT NULL, diary TEXT NOT NULL, font_size INTEGER NUT NULL, font_family TEXT NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL, FOREIGN KEY (month_year_id) REFERENCES month_years (id) ON DELETE CASCADE)');
 
         //insert sample datas to each tables
         List<int> monthIds = [];
@@ -89,6 +89,8 @@ class DBConnector {
                 'day': i + 1,
                 'diary':
                     'diary day ${i + 1} Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab adipisci architecto asperiores at atque autem, blanditiis consectetur deserunt dignissimos dolorem enim error excepturi explicabo id illum incidunt inventore pariatur placeat porro quibusdam quis quo reprehenderit saepe similique tempora tempore veritatis voluptatem. Blanditiis commodi dolorem facilis ipsa laudantium nostrum quidem temporibus',
+                'font_size': 20,
+                'font_family': 'FontFamily.Caveat',
               },
             );
           }

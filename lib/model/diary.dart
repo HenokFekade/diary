@@ -1,4 +1,5 @@
 import 'package:diary/database/db_connector.dart';
+import 'package:diary/utility/font_family.dart';
 import 'package:sqflite/sqlite_api.dart';
 
 class Diary {
@@ -6,14 +7,42 @@ class Diary {
   int _day;
   int _monthYearId;
   String _diary;
+  int _fontSize;
+  FontFamily _fontFamily;
   String _timestamp;
+  Map<String, FontFamily> _fontFamilyMapper = {
+    'FontFamily.Caveat': FontFamily.Caveat,
+    'FontFamily.Cookie': FontFamily.Cookie,
+    'FontFamily.Courgette': FontFamily.Courgette,
+    'FontFamily.DancingScript': FontFamily.DancingScript,
+    'FontFamily.IndieFlower': FontFamily.IndieFlower,
+    'FontFamily.Lato': FontFamily.Lato,
+    'FontFamily.LoversQuarrel': FontFamily.LoversQuarrel,
+    'FontFamily.Montserrat': FontFamily.Montserrat,
+    'FontFamily.Nunito': FontFamily.Nunito,
+    'FontFamily.Pacifico': FontFamily.Pacifico,
+    'FontFamily.PlayfairDisplay': FontFamily.PlayfairDisplay,
+    'FontFamily.Roboto': FontFamily.Roboto,
+    'FontFamily.Satisfy': FontFamily.Satisfy,
+    'FontFamily.SourceSansPro': FontFamily.SourceSansPro,
+    'FontFamily.Yellowtail': FontFamily.Yellowtail,
+  };
 
-  Diary({int id, String diary, int day, String timestamp, int monthYearId}) {
+  Diary(
+      {int id,
+      String diary,
+      int day,
+      String timestamp,
+      int monthYearId,
+      int fontSize,
+      FontFamily fontFamily}) {
     this._diary = diary;
     this._id = id;
     this._day = day;
     this._timestamp = timestamp;
     this._monthYearId = monthYearId;
+    this._fontFamily = fontFamily;
+    this._fontSize = fontSize;
   }
 
   String get diary => this._diary;
@@ -26,8 +55,20 @@ class Diary {
 
   String get timestamp => this._timestamp;
 
+  int get fontSize => this._fontSize;
+
+  FontFamily get fontFamily => this._fontFamily;
+
   set diary(String value) {
-    _diary = value;
+    this._diary = value;
+  }
+
+  set fontSize(int value) {
+    this._fontSize = value;
+  }
+
+  set fontFamily(FontFamily value) {
+    this._fontFamily = value;
   }
 
   Future<Database> _getDBInstance() async {
@@ -38,7 +79,9 @@ class Diary {
     Map<String, dynamic> map = {
       'month_year_id': this._monthYearId,
       'day': this._day,
-      'diary': this._diary
+      'diary': this._diary,
+      'font_size': this._fontSize,
+      'font_family': this.fontFamily.toString(),
     };
     return map;
   }
@@ -50,6 +93,8 @@ class Diary {
       monthYearId: map['month_year_id'],
       day: map['day'],
       timestamp: map['timestamp'],
+      fontSize: map['font_size'],
+      fontFamily: this._fontFamilyMapper[map['font_family']],
     );
   }
 
@@ -68,11 +113,13 @@ class Diary {
   Future<List<Diary>> get(String where, List whereArg) async {
     Database database = await this._getDBInstance();
     List<Map<String, dynamic>> data = await database.rawQuery(
-        'SELECT id, month_year_id, day, diary, timestamp FROM diaries WHERE $where',
+        'SELECT id, month_year_id, day, diary, font_size, font_family, timestamp FROM diaries WHERE $where',
         whereArg);
     List<Diary> diaries = [];
     for (Map value in data) {
       Diary diary = Diary()._fromJson(value);
+      print(diary.fontFamily);
+      print(diary.fontSize);
       diaries.add(diary);
     }
     await database.close();
@@ -88,11 +135,9 @@ class Diary {
 
   Future<int> update() async {
     Database database = await this._getDBInstance();
-    print(this._diary);
-    Map<String, dynamic> map = {'diary': this._diary};
+    Map<String, dynamic> map = this._toJson();
     int id = await database
         .update('diaries', map, where: 'id = ?', whereArgs: [this._id]);
-    print(this._diary);
     await database.close();
     return id;
   }
